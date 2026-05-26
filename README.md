@@ -61,6 +61,8 @@ Before building this Android app, the llama.cpp native artifacts must already ex
 └── lib/*.so
 ```
 
+# Note: This repo comes with a copy of these files that confroms with the apk in release.
+
 The wrapper expects these artifacts to have been produced separately from the main llama.cpp build system. This Android project only packages and launches them.
 
 After building or installing the native artifacts, run the copy script from this folder or from the llama.cpp root:
