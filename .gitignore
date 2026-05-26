@@ -31,6 +31,7 @@ out/
 *.keystore
 *.jks
 keystore.properties
+*.rar
 
 # Native binaries (too large for git, use copy-native-libs.sh)
 app/src/main/jniLibs/
