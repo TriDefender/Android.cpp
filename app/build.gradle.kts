@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
@@ -30,9 +32,9 @@ android {
     // Signing config is loaded from keystore.properties (not committed to git).
     // See keystore.properties.example and README.md for setup instructions.
     val keystorePropertiesFile = rootProject.file("keystore.properties")
-    val keystoreProperties = java.util.Properties()
+    val keystoreProperties = Properties()
     if (keystorePropertiesFile.exists()) {
-        keystoreProperties.load(keystorePropertiesFile.inputStream())
+        keystorePropertiesFile.inputStream().use(keystoreProperties::load)
     }
 
     signingConfigs {
