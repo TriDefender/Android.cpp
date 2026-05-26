@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Android.cpp</string>
+    
+    <!-- Model Configuration -->
+    <string name="model_file">Model File</string>
+    <string name="model_path_label">Model path</string>
+    <string name="select_model_placeholder">Select a GGUF model file</string>
+    <string name="browse">Browse</string>
+    
+    <!-- Context Size -->
+    <string name="context_size">Context Size</string>
+    <string name="context_size_desc">Maximum context length for inference</string>
+    <string name="tokens_count">%1$d tokens</string>
+    
+    <!-- Batch Size -->
+    <string name="batch_size">Batch Size</string>
+    <string name="batch_size_desc">Batch size for prompt processing</string>
+    <string name="batch_count">%1$d</string>
+    
+    <!-- Advanced Settings -->
+    <string name="advanced_settings">Advanced Settings</string>
+    <string name="predict_tokens">Predict Tokens</string>
+    <string name="predict_tokens_info">Leave empty for infinite generation</string>
+    <string name="predict_tokens_hint">-1 for infinite</string>
+    <string name="embedding_mode">Embedding Mode</string>
+    <string name="embedding_mode_desc">Enable for embedding models</string>
+    <string name="pooling_mode">Pooling Mode</string>
+    <string name="pooling_mode_desc">Pooling method for embeddings</string>
+    
+    <!-- Device Configuration -->
+    <string name="device_selection">Device Selection</string>
+    <string name="device_selection_desc">Select the compute device for inference</string>
+    <string name="gpu_layers">GPU Layers</string>
+    <string name="gpu_layers_desc">Number of layers to offload to GPU/NPU</string>
+    <string name="auto">Auto</string>
+    <string name="all">All</string>
+    <string name="manual">Manual</string>
+    <string name="available">Available</string>
+    <string name="unavailable">Unavailable</string>
+    <string name="layers_count">%1$d layers</string>
+    <string name="device_cpu">CPU</string>
+    <string name="device_opencl">OpenCL</string>
+    <string name="device_htp0">HTP 0</string>
+    <string name="device_htp1">HTP 1</string>
+    <string name="device_htp2">HTP 2</string>
+    <string name="device_htp3">HTP 3</string>
+    <string name="device_htp4">HTP 4</string>
+    
+    <!-- KV Cache Configuration -->
+    <string name="kv_cache_config">KV Cache Configuration</string>
+    <string name="k_cache_type">K Cache Type</string>
+    <string name="k_cache_type_desc">Quantization format for key cache</string>
+    <string name="v_cache_type">V Cache Type</string>
+    <string name="v_cache_type_desc">Quantization format for value cache</string>
+    <string name="kv_offload">KV Offload</string>
+    <string name="kv_offload_desc">Offload KV cache to GPU for faster inference</string>
+    <string name="flash_attention">Flash Attention</string>
+    <string name="flash_attention_desc">Optimized attention computation</string>
+    <string name="flash_attention_auto">Automatically enabled when supported</string>
+    <string name="flash_attention_on">Flash Attention enabled</string>
+    <string name="flash_attention_off">Flash Attention disabled</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
+    
+    <!-- Auto-Fit Configuration -->
+    <string name="auto_fit">Auto-Fit</string>
+    <string name="auto_fit_desc">Automatically adjust context size to fit available memory</string>
+    <string name="target_memory_margin">Target Memory Margin</string>
+    <string name="memory_margin_desc">Amount of memory to keep free (MiB)</string>
+    <string name="mib_format">%1$d MiB</string>
+
+    <!-- Server Configuration -->
+    <string name="server_config">Server Configuration</string>
+    <string name="port">Port</string>
+    <string name="port_hint">8080</string>
+    <string name="port_range_hint">Valid range: 1–65535</string>
+    <string name="port_error">Port must be between 1 and 65535</string>
+    <string name="bind_all_interfaces">Bind to All Interfaces</string>
+    <string name="bind_all_desc">Allow connections from other devices (0.0.0.0)</string>
+    <string name="api_key">API Key</string>
+    <string name="api_key_hint">Optional API key for authentication</string>
+    <string name="api_key_optional">Optional</string>
+    <string name="timeout">Timeout</string>
+    <string name="timeout_hint">600</string>
+    <string name="timeout_format">%1$d seconds</string>
+    <string name="timeout_error">Timeout must be greater than 0</string>
+    <string name="seconds">seconds</string>
+    <string name="server_url">Server URL</string>
+    <string name="copy">Copy</string>
+    <string name="copied">Copied!</string>
+    <string name="show">Show</string>
+    <string name="hide">Hide</string>
+</resources>

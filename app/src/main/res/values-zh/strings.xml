@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Android.cpp</string>
+    
+    <!-- Model Configuration -->
+    <string name="model_file">模型文件</string>
+    <string name="model_path_label">模型路径</string>
+    <string name="select_model_placeholder">选择 GGUF 模型文件</string>
+    <string name="browse">浏览</string>
+    
+    <!-- Context Size -->
+    <string name="context_size">上下文大小</string>
+    <string name="context_size_desc">推理的最大上下文长度</string>
+    <string name="tokens_count">%1$d 个标记</string>
+    
+    <!-- Batch Size -->
+    <string name="batch_size">批处理大小</string>
+    <string name="batch_size_desc">提示处理的批处理大小</string>
+    <string name="batch_count">%1$d</string>
+    
+    <!-- Advanced Settings -->
+    <string name="advanced_settings">高级设置</string>
+    <string name="predict_tokens">预测标记</string>
+    <string name="predict_tokens_info">留空表示无限生成</string>
+    <string name="predict_tokens_hint">-1 表示无限</string>
+    <string name="embedding_mode">嵌入模式</string>
+    <string name="embedding_mode_desc">为嵌入模型启用</string>
+    <string name="pooling_mode">Pooling 模式</string>
+    <string name="pooling_mode_desc">嵌入向量的池化方法</string>
+    
+    <!-- Device Configuration -->
+    <string name="device_selection">设备选择</string>
+    <string name="device_selection_desc">选择推理的计算设备</string>
+    <string name="gpu_layers">GPU 层</string>
+    <string name="gpu_layers_desc">卸载到 GPU/NPU 的层数</string>
+    <string name="auto">自动</string>
+    <string name="all">全部</string>
+    <string name="manual">手动</string>
+    <string name="available">可用</string>
+    <string name="unavailable">不可用</string>
+    <string name="layers_count">%1$d 层</string>
+    <string name="device_cpu">CPU</string>
+    <string name="device_opencl">OpenCL</string>
+    <string name="device_htp0">HTP 0</string>
+    <string name="device_htp1">HTP 1</string>
+    <string name="device_htp2">HTP 2</string>
+    <string name="device_htp3">HTP 3</string>
+    <string name="device_htp4">HTP 4</string>
+    
+    <!-- KV Cache Configuration -->
+    <string name="kv_cache_config">KV 缓存配置</string>
+    <string name="k_cache_type">K 缓存类型</string>
+    <string name="k_cache_type_desc">键缓存的量化格式</string>
+    <string name="v_cache_type">V 缓存类型</string>
+    <string name="v_cache_type_desc">值缓存的量化格式</string>
+    <string name="kv_offload">KV 卸载</string>
+    <string name="kv_offload_desc">将 KV 缓存卸载到 GPU 以加速推理</string>
+    <string name="flash_attention">Flash Attention</string>
+    <string name="flash_attention_desc">优化的注意力计算</string>
+    <string name="flash_attention_auto">支持时自动启用</string>
+    <string name="flash_attention_on">Flash Attention 已启用</string>
+    <string name="flash_attention_off">Flash Attention 已禁用</string>
+    <string name="on">开</string>
+    <string name="off">关</string>
+    
+    <!-- Auto-Fit Configuration -->
+    <string name="auto_fit">自适应</string>
+    <string name="auto_fit_desc">自动调整上下文大小以适应可用内存</string>
+    <string name="target_memory_margin">目标内存余量</string>
+    <string name="memory_margin_desc">保持空闲的内存量 (MiB)</string>
+    <string name="mib_format">%1$d MiB</string>
+
+    <!-- Server Configuration -->
+    <string name="server_config">服务器配置</string>
+    <string name="port">端口</string>
+    <string name="port_hint">8080</string>
+    <string name="port_range_hint">有效范围：1–65535</string>
+    <string name="port_error">端口必须在 1 到 65535 之间</string>
+    <string name="bind_all_interfaces">绑定到所有接口</string>
+    <string name="bind_all_desc">允许来自其他设备的连接 (0.0.0.0)</string>
+    <string name="api_key">API 密钥</string>
+    <string name="api_key_hint">身份验证的可选 API 密钥</string>
+    <string name="api_key_optional">可选</string>
+    <string name="timeout">超时</string>
+    <string name="timeout_hint">600</string>
+    <string name="timeout_format">%1$d 秒</string>
+    <string name="timeout_error">超时必须大于 0</string>
+    <string name="seconds">秒</string>
+    <string name="server_url">服务器 URL</string>
+    <string name="copy">复制</string>
+    <string name="copied">已复制！</string>
+    <string name="show">显示</string>
+    <string name="hide">隐藏</string>
+</resources>

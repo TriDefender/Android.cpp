@@ -1,0 +1,50 @@
+# Gradle
+.gradle/
+build/
+out/
+*.lock
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+
+# Build outputs
+*.apk
+*.ap_
+*.aar
+*.class
+
+# Archives (except gradle wrapper)
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+!gradle-wrapper.jar
+
+# Signing / keystore (use your own)
+*.keystore
+*.jks
+keystore.properties
+
+# Native binaries (too large for git, use copy-native-libs.sh)
+app/src/main/jniLibs/
+
+# JVM crash dumps and heap dumps
+hs_err_pid*.log
+replay_pid*.log
+java_pid*.hprof
+
+# Logs
+logs/
+*.log
+
+# AI tool directories
+.claude/
+.sisyphus/
+CLAUDE.md
