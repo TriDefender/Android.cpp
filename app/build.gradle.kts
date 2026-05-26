@@ -16,8 +16,8 @@ android {
         applicationId = "tridefender.llama.snapdragon"
         minSdk = 24
         targetSdk = 34
-        versionCode = 4
-        versionName = "1.1.b3cf8"
+        versionCode = 5
+        versionName = "1.1.c21b45"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
