@@ -91,7 +91,7 @@ The APK can be built inside the Android builder container with:
 
 ```bash
 docker run --rm \
-  -v /d/llama.cpp/android-gui-wrapper:/source \
+  -v /path/to/repo/:/source \
   -w /source \
   llama-android-builder:latest \
   bash -c "rm -rf .gradle app/.gradle app/build && export ANDROID_HOME=/opt/android-sdk && gradle assembleDebug --no-daemon --parallel"
