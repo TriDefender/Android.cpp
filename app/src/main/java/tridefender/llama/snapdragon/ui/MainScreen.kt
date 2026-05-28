@@ -2,6 +2,7 @@ package tridefender.llama.snapdragon.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
@@ -12,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import tridefender.llama.snapdragon.ui.kernel.KernelScreen
 import tridefender.llama.snapdragon.ui.launcher.AllConfigScreen
 import tridefender.llama.snapdragon.ui.runtime.RuntimeScreen
 
@@ -41,6 +43,18 @@ fun MainScreen(
                     }
                 )
                 NavigationBarItem(
+                    icon = { Icon(Icons.Default.Memory, contentDescription = null) },
+                    label = { Text("Kernels") },
+                    selected = currentRoute == "kernels",
+                    onClick = {
+                        if (currentRoute != "kernels") {
+                            navController.navigate("kernels") {
+                                popUpTo("config") { inclusive = false }
+                            }
+                        }
+                    }
+                )
+                NavigationBarItem(
                     icon = { Icon(Icons.Default.PlayArrow, contentDescription = null) },
                     label = { Text("Runtime") },
                     selected = currentRoute == "runtime",
@@ -62,6 +76,9 @@ fun MainScreen(
         ) {
             composable("config") {
                 AllConfigScreen()
+            }
+            composable("kernels") {
+                KernelScreen()
             }
             composable("runtime") {
                 RuntimeScreen()

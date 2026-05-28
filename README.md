@@ -83,7 +83,7 @@ It also copies `bin/llama-server` as:
 app/src/main/jniLibs/arm64-v8a/libllama-server.so
 ```
 
-This rename is intentional: Android automatically packages and extracts `.so` files from `jniLibs`, so the executable is stored with a library-style filename during packaging and restored to `llama-server` at runtime.
+This rename is intentional: Android automatically packages and extracts `.so` files from `jniLibs`, so the executable is stored with a library-style filename during packaging. Bundled kernels launch directly from Android's native library directory; downloaded kernels keep the same `libllama-server.so` name and are launched through Android's dynamic linker.
 
 ## Building the APK
 
@@ -160,6 +160,7 @@ At app startup, `MainActivity` opens the Compose UI:
 MainActivity
 └── MainScreen
     ├── Config tab  -> AllConfigScreen
+    ├── Kernels tab -> KernelScreen
     └── Runtime tab -> RuntimeScreen
 ```
 
@@ -169,6 +170,7 @@ When the user starts the server:
 RuntimeScreen
 └── RuntimeViewModel.startServer()
     └── ServerProcessManager.startServer(config)
+        ├── KernelRepository.prepareActiveVersion()
         ├── BinaryExtractor.ensureAllAvailable(context)
         ├── build llama-server command line
         ├── configure process environment
@@ -176,20 +178,20 @@ RuntimeScreen
         └── read stdout/stderr for server status
 ```
 
-`BinaryExtractor` restores runtime files under app-private storage:
+`BinaryExtractor` stages active runtime files under app-private storage:
 
 ```text
-filesDir/bin/llama-server
-filesDir/lib/*.so
+filesDir/bin/libllama-server.so  # only for downloaded kernels
+filesDir/lib/*.so                # active kernel libraries
 ```
 
-It first attempts to create symlinks from Android's extracted native library directory. If symlinking fails, it copies the files. The executable is marked with `chmod 755`.
+For bundled kernels, the process launches `libllama-server.so` directly from Android's extracted native library directory. For downloaded kernels, Android does not reliably allow direct `execve` of app-private downloaded files, so the app launches `/system/bin/linker64 filesDir/bin/libllama-server.so ...`. The staged executable is still marked with `chmod 755` each time a kernel is activated or prepared.
 
 `ServerProcessManager` configures library search paths before launching the process:
 
 ```text
-LD_LIBRARY_PATH=<filesDir>:<filesDir>/lib:/system/lib64:/system/vendor/lib64:/vendor/lib64:/vendor/dsp/cdsp
-ADSP_LIBRARY_PATH=<filesDir>/lib
+LD_LIBRARY_PATH=<filesDir>/bin:<filesDir>/lib:<nativeLibraryDir>:<filesDir>:/system/lib64:/system/vendor/lib64:/vendor/lib64:/vendor/dsp/cdsp
+ADSP_LIBRARY_PATH=<filesDir>/lib;<nativeLibraryDir>;/vendor/lib/rfsa/adsp;/system/vendor/lib/rfsa/adsp;/vendor/lib64/rfs/dsp;/vendor/dsp/cdsp;/dsp
 GGML_HEXAGON_EXPERIMENTAL=1   # for HTP devices
 ```
 
@@ -220,7 +222,7 @@ The active configuration is persisted as JSON at runtime by `ConfigRepositoryImp
 The generated command has this general shape:
 
 ```text
-filesDir/bin/llama-server
+<nativeLibraryDir>/libllama-server.so
   --model <model-path>
   --poll 1000
   --ctx-size <context-size>
@@ -239,6 +241,8 @@ filesDir/bin/llama-server
   [--timeout <seconds>]
   [--predict <tokens>]
 ```
+
+Downloaded kernels use the same arguments with `/system/bin/linker64 <filesDir>/bin/libllama-server.so` as the command prefix.
 
 The app treats stdout/stderr as the process status channel. It marks the server as running when output contains messages such as `HTTP server is listening` or `llama server listening`.
 

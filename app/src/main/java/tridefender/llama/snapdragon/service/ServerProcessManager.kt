@@ -11,6 +11,7 @@ import tridefender.llama.snapdragon.model.FlashAttentionMode
 import tridefender.llama.snapdragon.model.DeviceType
 import tridefender.llama.snapdragon.model.ServerState
 import tridefender.llama.snapdragon.repository.ConfigRepository
+import tridefender.llama.snapdragon.repository.KernelRepository
 import tridefender.llama.snapdragon.util.BinaryExtractor
 import tridefender.llama.snapdragon.util.UriUtils
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -31,7 +32,8 @@ import javax.inject.Singleton
 @Singleton
 class ServerProcessManager @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val configRepository: ConfigRepository
+    private val configRepository: ConfigRepository,
+    private val kernelRepository: KernelRepository
 ) {
     
     companion object {
@@ -57,8 +59,33 @@ class ServerProcessManager @Inject constructor(
         Log.d(TAG, "ServerProcessManager initialized")
     }
     
-    fun startServer(config: ServerConfig) {
-        cleanup()
+    suspend fun startServer(config: ServerConfig) {
+        startServer(config, allowCpuFallback = true, clearOutput = true)
+    }
+
+    private suspend fun startServer(
+        config: ServerConfig,
+        allowCpuFallback: Boolean,
+        clearOutput: Boolean,
+        doCleanup: Boolean = true
+    ) {
+        if (doCleanup) {
+            cleanup()
+        }
+
+        if (clearOutput) {
+            _serverOutput.value = ""
+            _realtimeOutput.value = ""
+        }
+
+        if (!kernelRepository.prepareActiveVersion()) {
+            Log.e(TAG, "Failed to prepare active kernel version")
+            _serverStatus.update { ServerStatus(
+                state = ServerState.ERROR,
+                errorMessage = "Failed to prepare active kernel version"
+            )}
+            return
+        }
         
         if (!BinaryExtractor.ensureAllAvailable(context)) {
             Log.e(TAG, "Failed to setup libraries")
@@ -69,10 +96,12 @@ class ServerProcessManager @Inject constructor(
             return
         }
         
+        val launchCommand = BinaryExtractor.getLaunchCommand(context)
         val binaryPath = BinaryExtractor.getBinaryPath(context)
-        Log.i(TAG, "Using binary at: $binaryPath")
+        Log.i(TAG, "Using executable at: $binaryPath")
+        Log.i(TAG, "Launch prefix: ${launchCommand.joinToString(" ")}")
         
-        val cmd = buildCommand(config, binaryPath)
+        val cmd = buildCommand(config, launchCommand)
         
         try {
             val builder = ProcessBuilder(cmd)
@@ -82,6 +111,8 @@ class ServerProcessManager @Inject constructor(
             val env = builder.environment()
             val libDir = BinaryExtractor.getLibraryDir(context)
             val filesDir = context.filesDir.absolutePath
+            val runtimeLibDirs = BinaryExtractor.getRuntimeLibraryDirs(context)
+            val adspLibDirs = buildAdspLibraryPath(libDir)
             val systemLibDirs = listOf(
                 "/system/lib64",
                 "/system/vendor/lib64",
@@ -89,9 +120,9 @@ class ServerProcessManager @Inject constructor(
                 "/vendor/dsp/cdsp"
             )
             val existingLdPath = env["LD_LIBRARY_PATH"] ?: ""
-            val allPaths = listOf(filesDir, libDir) + systemLibDirs + listOf(existingLdPath)
+            val allPaths = runtimeLibDirs + listOf(filesDir) + systemLibDirs + listOf(existingLdPath)
             env["LD_LIBRARY_PATH"] = allPaths.filter { it.isNotEmpty() }.joinToString(":")
-            env["ADSP_LIBRARY_PATH"] = libDir
+            env["ADSP_LIBRARY_PATH"] = adspLibDirs.joinToString(";")
             
             val isHexagonDevice = config.deviceType in listOf(
                 DeviceType.HTP0, DeviceType.HTP1, DeviceType.HTP2, 
@@ -108,7 +139,7 @@ class ServerProcessManager @Inject constructor(
             
             val process = builder.start()
             serverProcess = process
-            serverJob = process.toJob()
+            serverJob = process.toJob(config, allowCpuFallback)
             outputJob = readOutput(process)
             
             _serverStatus.update { ServerStatus(ServerState.STARTING, pid = null) }
@@ -132,7 +163,11 @@ class ServerProcessManager @Inject constructor(
                         output.append(it).append("\n")
                         _realtimeOutput.value += it + "\n"
                         Log.d(TAG, "Server: $it")
-                        if (it.contains("HTTP server is listening") || it.contains("llama server listening")) {
+                        if (
+                            it.contains("HTTP server is listening") ||
+                            it.contains("llama server listening") ||
+                            it.contains("server is listening on")
+                        ) {
                             _serverStatus.update { ServerStatus(ServerState.RUNNING) }
                         }
                     }
@@ -168,11 +203,25 @@ class ServerProcessManager @Inject constructor(
         serverJob = null
         outputJob = null
     }
+
+    private fun buildAdspLibraryPath(activeLibDir: String): List<String> {
+        val appDirs = listOf(
+            activeLibDir,
+            context.applicationInfo.nativeLibraryDir
+        )
+        val dspDirs = listOf(
+            "/vendor/lib/rfsa/adsp",
+            "/system/vendor/lib/rfsa/adsp",
+            "/vendor/lib64/rfs/dsp",
+            "/vendor/dsp/cdsp",
+            "/dsp"
+        )
+
+        return (appDirs + dspDirs).distinct()
+    }
     
-    private fun buildCommand(config: ServerConfig, binaryPath: String): List<String> {
-        val cmd = mutableListOf<String>()
-        
-        cmd.add(binaryPath)
+    private fun buildCommand(config: ServerConfig, launchCommand: List<String>): List<String> {
+        val cmd = launchCommand.toMutableList()
         cmd.add("--model")
         
         val modelPath = if (config.modelPath.startsWith("content://")) {
@@ -351,13 +400,50 @@ class ServerProcessManager @Inject constructor(
         }
     }
     
-    private fun Process.toJob(): Job {
+    private fun isHexagonDevice(deviceType: DeviceType): Boolean {
+        return deviceType in listOf(
+            DeviceType.HTP0,
+            DeviceType.HTP1,
+            DeviceType.HTP2,
+            DeviceType.HTP3,
+            DeviceType.HTP4
+        )
+    }
+
+    private fun shouldFallbackToCpu(config: ServerConfig, exitCode: Int, allowCpuFallback: Boolean): Boolean {
+        if (!allowCpuFallback || exitCode == 0 || !isHexagonDevice(config.deviceType)) {
+            return false
+        }
+
+        val output = _realtimeOutput.value.lowercase()
+        return output.contains("ggml-hex: failed to open session") ||
+            output.contains("ggml-hex: failed to create device/session") ||
+            output.contains("ggml_assert(device) failed")
+    }
+
+    private fun Process.toJob(config: ServerConfig, allowCpuFallback: Boolean): Job {
         return CoroutineScope(Dispatchers.IO).launch {
             try {
                 val exitCode = this@toJob.waitFor()
                 Log.d(TAG, "Server process exited with code: $exitCode")
                 if (exitCode != 0) {
-                    _serverStatus.update { ServerStatus(ServerState.ERROR, errorMessage = "Process exited with code $exitCode") }
+                    if (shouldFallbackToCpu(config, exitCode, allowCpuFallback)) {
+                        val message = "Hexagon backend failed to open a CDSP session; restarting on CPU"
+                        Log.w(TAG, message)
+                        _realtimeOutput.value += "$message\n"
+                        _serverStatus.update { ServerStatus(ServerState.STARTING) }
+                        startServer(
+                            config.copy(
+                                deviceType = DeviceType.CPU,
+                                flashAttention = FlashAttentionMode.AUTO
+                            ),
+                            allowCpuFallback = false,
+                            clearOutput = false,
+                            doCleanup = false
+                        )
+                    } else {
+                        _serverStatus.update { ServerStatus(ServerState.ERROR, errorMessage = "Process exited with code $exitCode") }
+                    }
                 } else {
                     _serverStatus.update { ServerStatus(ServerState.STOPPED) }
                 }
