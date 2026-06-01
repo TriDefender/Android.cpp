@@ -12,10 +12,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import tridefender.llama.snapdragon.R
 import tridefender.llama.snapdragon.model.LogEntry
 import tridefender.llama.snapdragon.model.LogLevel
 import tridefender.llama.snapdragon.model.ServerState
@@ -48,7 +50,7 @@ fun RuntimeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Server Status",
+                        text = stringResource(R.string.server_status),
                         style = MaterialTheme.typography.titleMedium
                     )
                     StatusIndicator(serverStatus.state)
@@ -56,15 +58,15 @@ fun RuntimeScreen(
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                ServerInfoRow("Model", java.net.URLDecoder.decode(config.modelPath, "UTF-8").substringAfterLast("/"))
-                ServerInfoRow("Port", config.getEffectivePort().toString())
-                ServerInfoRow("Context", config.getEffectiveContextSize().toString())
-                ServerInfoRow("Device", config.deviceType.name)
+                ServerInfoRow(stringResource(R.string.model), java.net.URLDecoder.decode(config.modelPath, "UTF-8").substringAfterLast("/"))
+                ServerInfoRow(stringResource(R.string.port), config.getEffectivePort().toString())
+                ServerInfoRow(stringResource(R.string.context), config.getEffectiveContextSize().toString())
+                ServerInfoRow(stringResource(R.string.device), config.deviceType.name)
                 
                 if (serverStatus.errorMessage != null) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Error: ${serverStatus.errorMessage}",
+                        text = stringResource(R.string.error_format, serverStatus.errorMessage ?: ""),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error
                     )
@@ -88,7 +90,7 @@ fun RuntimeScreen(
             ) {
                 Icon(Icons.Default.PlayArrow, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Start")
+                Text(stringResource(R.string.start))
             }
             
             Button(
@@ -101,7 +103,7 @@ fun RuntimeScreen(
             ) {
                 Icon(Icons.Default.Stop, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Stop")
+                Text(stringResource(R.string.stop))
             }
         }
         
@@ -124,11 +126,11 @@ fun RuntimeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Logs",
+                        text = stringResource(R.string.logs),
                         style = MaterialTheme.typography.titleSmall
                     )
                     TextButton(onClick = { viewModel.clearLogs() }) {
-                        Text("Clear")
+                        Text(stringResource(R.string.clear))
                     }
                 }
                 
@@ -150,12 +152,12 @@ fun RuntimeScreen(
 @Composable
 fun StatusIndicator(state: ServerState) {
     val (color, text) = when (state) {
-        ServerState.IDLE -> Color.Gray to "Idle"
-        ServerState.STARTING -> Color.Yellow to "Starting"
-        ServerState.RUNNING -> Color.Green to "Running"
-        ServerState.STOPPING -> Color(0xFFFFA500) to "Stopping"
-        ServerState.STOPPED -> Color.Gray to "Stopped"
-        ServerState.ERROR -> Color.Red to "Error"
+        ServerState.IDLE -> Color.Gray to stringResource(R.string.status_idle)
+        ServerState.STARTING -> Color.Yellow to stringResource(R.string.status_starting)
+        ServerState.RUNNING -> Color.Green to stringResource(R.string.status_running)
+        ServerState.STOPPING -> Color(0xFFFFA500) to stringResource(R.string.status_stopping)
+        ServerState.STOPPED -> Color.Gray to stringResource(R.string.status_stopped)
+        ServerState.ERROR -> Color.Red to stringResource(R.string.status_error)
     }
     
     Row(verticalAlignment = Alignment.CenterVertically) {

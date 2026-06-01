@@ -28,9 +28,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import tridefender.llama.snapdragon.R
 import tridefender.llama.snapdragon.model.CacheType
 import tridefender.llama.snapdragon.model.DeviceType
 import tridefender.llama.snapdragon.model.FlashAttentionMode
@@ -64,7 +66,7 @@ fun NumberField(
         label = { Text(label) },
         placeholder = { 
             Text(
-                "\u9ed8\u8ba4: $defaultValue", 
+                stringResource(R.string.default_value, defaultValue),
                 style = MaterialTheme.typography.bodySmall
             ) 
         },
@@ -184,22 +186,22 @@ fun ModelSection(
     onBrowseClick: () -> Unit
 ) {
     ConfigSectionCard(
-        title = "\u6a21\u578b\u914d\u7f6e",
+        title = stringResource(R.string.model_config),
         icon = Icons.Default.Storage,
         iconColor = MaterialTheme.colorScheme.primary
     ) {
         val displayName = modelPath.substringAfterLast("%2F").substringAfterLast("/")
         
         OutlinedTextField(
-            value = displayName.ifEmpty { "\u70b9\u51fb\u9009\u62e9\u6a21\u578b\u6587\u4ef6" },
+            value = displayName.ifEmpty { stringResource(R.string.tap_to_select_model_file) },
             onValueChange = {},
-            label = { Text("\u6a21\u578b\u6587\u4ef6") },
+            label = { Text(stringResource(R.string.model_file)) },
             modifier = Modifier.fillMaxWidth(),
             readOnly = true,
             singleLine = true,
             trailingIcon = {
                 IconButton(onClick = onBrowseClick) {
-                    Icon(Icons.Default.Folder, contentDescription = "\u6d4f\u89c8")
+                    Icon(Icons.Default.Folder, contentDescription = stringResource(R.string.browse))
                 }
             },
             shape = RoundedCornerShape(12.dp)
@@ -221,12 +223,12 @@ fun ModelSection(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        "\u5d4c\u5165\u6a21\u5f0f",
+                        stringResource(R.string.embedding_mode),
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = "\u7528\u4e8e\u5d4c\u5165\u5411\u91cf\u6a21\u578b",
+                        text = stringResource(R.string.embedding_mode_for_models),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -252,16 +254,10 @@ fun ModelSection(
                     onExpandedChange = { expanded = it }
                 ) {
                     OutlinedTextField(
-                        value = when (poolingType) {
-                            PoolingType.NONE -> "None"
-                            PoolingType.MEAN -> "Mean"
-                            PoolingType.CLS -> "CLS"
-                            PoolingType.LAST -> "Last"
-                            PoolingType.RANK -> "Rank"
-                        },
+                        value = poolingType.localizedName(),
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Pooling \u6a21\u5f0f") },
+                        label = { Text(stringResource(R.string.pooling_mode_label)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                         modifier = Modifier
                             .menuAnchor()
@@ -276,13 +272,7 @@ fun ModelSection(
                             DropdownMenuItem(
                                 text = { 
                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(when (type) {
-                                            PoolingType.NONE -> "None"
-                                            PoolingType.MEAN -> "Mean"
-                                            PoolingType.CLS -> "CLS"
-                                            PoolingType.LAST -> "Last"
-                                            PoolingType.RANK -> "Rank"
-                                        })
+                                        Text(type.localizedName())
                                         if (type == poolingType) {
                                             Spacer(modifier = Modifier.width(8.dp))
                                             Icon(
@@ -313,7 +303,7 @@ fun DeviceSection(
     onGpuLayersChange: (Int?) -> Unit
 ) {
     ConfigSectionCard(
-        title = "\u8ba1\u7b97\u8bbe\u5907",
+        title = stringResource(R.string.compute_device),
         icon = Icons.Default.Memory,
         iconColor = MaterialTheme.colorScheme.secondary
     ) {
@@ -323,19 +313,19 @@ fun DeviceSection(
             onExpandedChange = { expanded = it }
         ) {
             val deviceLabel = when (deviceType) {
-                DeviceType.CPU -> "CPU"
-                DeviceType.OPENCL -> "OpenCL (GPU)"
-                DeviceType.HTP0 -> "HTP 0 (NPU)"
-                DeviceType.HTP1 -> "HTP 1 (NPU)"
-                DeviceType.HTP2 -> "HTP 2 (NPU)"
-                DeviceType.HTP3 -> "HTP 3 (NPU)"
-                DeviceType.HTP4 -> "HTP 4 (NPU)"
+                DeviceType.CPU -> stringResource(R.string.device_cpu)
+                DeviceType.OPENCL -> stringResource(R.string.device_opencl_gpu)
+                DeviceType.HTP0 -> stringResource(R.string.device_htp_npu, 0)
+                DeviceType.HTP1 -> stringResource(R.string.device_htp_npu, 1)
+                DeviceType.HTP2 -> stringResource(R.string.device_htp_npu, 2)
+                DeviceType.HTP3 -> stringResource(R.string.device_htp_npu, 3)
+                DeviceType.HTP4 -> stringResource(R.string.device_htp_npu, 4)
             }
             OutlinedTextField(
                 value = deviceLabel,
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("\u8bbe\u5907\u7c7b\u578b") },
+                label = { Text(stringResource(R.string.device_type)) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 modifier = Modifier.menuAnchor().fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
@@ -344,13 +334,13 @@ fun DeviceSection(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
-                DropdownMenuItem(text = { Text("CPU") }, onClick = { onDeviceTypeChange(DeviceType.CPU); expanded = false })
-                DropdownMenuItem(text = { Text("OpenCL (GPU)") }, onClick = { onDeviceTypeChange(DeviceType.OPENCL); expanded = false })
-                DropdownMenuItem(text = { Text("HTP 0 (NPU)") }, onClick = { onDeviceTypeChange(DeviceType.HTP0); expanded = false })
-                DropdownMenuItem(text = { Text("HTP 1 (NPU)") }, onClick = { onDeviceTypeChange(DeviceType.HTP1); expanded = false })
-                DropdownMenuItem(text = { Text("HTP 2 (NPU)") }, onClick = { onDeviceTypeChange(DeviceType.HTP2); expanded = false })
-                DropdownMenuItem(text = { Text("HTP 3 (NPU)") }, onClick = { onDeviceTypeChange(DeviceType.HTP3); expanded = false })
-                DropdownMenuItem(text = { Text("HTP 4 (NPU)") }, onClick = { onDeviceTypeChange(DeviceType.HTP4); expanded = false })
+                DropdownMenuItem(text = { Text(stringResource(R.string.device_cpu)) }, onClick = { onDeviceTypeChange(DeviceType.CPU); expanded = false })
+                DropdownMenuItem(text = { Text(stringResource(R.string.device_opencl_gpu)) }, onClick = { onDeviceTypeChange(DeviceType.OPENCL); expanded = false })
+                DropdownMenuItem(text = { Text(stringResource(R.string.device_htp_npu, 0)) }, onClick = { onDeviceTypeChange(DeviceType.HTP0); expanded = false })
+                DropdownMenuItem(text = { Text(stringResource(R.string.device_htp_npu, 1)) }, onClick = { onDeviceTypeChange(DeviceType.HTP1); expanded = false })
+                DropdownMenuItem(text = { Text(stringResource(R.string.device_htp_npu, 2)) }, onClick = { onDeviceTypeChange(DeviceType.HTP2); expanded = false })
+                DropdownMenuItem(text = { Text(stringResource(R.string.device_htp_npu, 3)) }, onClick = { onDeviceTypeChange(DeviceType.HTP3); expanded = false })
+                DropdownMenuItem(text = { Text(stringResource(R.string.device_htp_npu, 4)) }, onClick = { onDeviceTypeChange(DeviceType.HTP4); expanded = false })
             }
         }
         
@@ -365,7 +355,7 @@ fun DeviceSection(
                     value = gpuLayers,
                     onValueChange = onGpuLayersChange,
                     defaultValue = 99,
-                    label = "GPU \u5c42\u6570 (\u7a7a=99)",
+                    label = stringResource(R.string.gpu_layers_empty_default),
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -386,7 +376,7 @@ fun KvCacheSection(
     onFlashAttentionChange: (FlashAttentionMode) -> Unit
 ) {
     ConfigSectionCard(
-        title = "KV \u7f13\u5b58",
+        title = stringResource(R.string.kv_cache),
         icon = Icons.Default.Settings,
         iconColor = MaterialTheme.colorScheme.tertiary
     ) {
@@ -402,7 +392,7 @@ fun KvCacheSection(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("KV Offload", style = MaterialTheme.typography.bodyLarge)
+                Text(stringResource(R.string.kv_offload), style = MaterialTheme.typography.bodyLarge)
                 Switch(checked = kvOffload, onCheckedChange = onKvOffloadChange)
             }
         }
@@ -422,7 +412,7 @@ fun KvCacheSection(
                     value = cacheTypeK.name,
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("K Cache") },
+                    label = { Text(stringResource(R.string.k_cache)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedK) },
                     modifier = Modifier.menuAnchor(),
                     shape = RoundedCornerShape(12.dp)
@@ -443,7 +433,7 @@ fun KvCacheSection(
                     value = cacheTypeV.name,
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("V Cache") },
+                    label = { Text(stringResource(R.string.v_cache)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedV) },
                     modifier = Modifier.menuAnchor(),
                     shape = RoundedCornerShape(12.dp)
@@ -467,7 +457,7 @@ fun KvCacheSection(
                 value = flashAttention.name,
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Flash Attention") },
+                label = { Text(stringResource(R.string.flash_attention)) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedFa) },
                 modifier = Modifier.menuAnchor().fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
@@ -493,7 +483,7 @@ fun ServerSection(
     onBindAllChange: (Boolean) -> Unit
 ) {
     ConfigSectionCard(
-        title = "\u670d\u52a1\u5668",
+        title = stringResource(R.string.server),
         icon = Icons.Default.Cloud,
         iconColor = MaterialTheme.colorScheme.primary
     ) {
@@ -505,14 +495,14 @@ fun ServerSection(
                 value = port,
                 onValueChange = onPortChange,
                 defaultValue = 8080,
-                label = "\u7aef\u53e3",
+                label = stringResource(R.string.port),
                 modifier = Modifier.weight(1f)
             )
             NumberField(
                 value = contextSize,
                 onValueChange = onContextSizeChange,
                 defaultValue = 16384,
-                label = "\u4e0a\u4e0b\u6587",
+                label = stringResource(R.string.context),
                 modifier = Modifier.weight(1f)
             )
         }
@@ -523,7 +513,7 @@ fun ServerSection(
             value = batchSize,
             onValueChange = onBatchSizeChange,
             defaultValue = 2048,
-            label = "\u6279\u5904\u7406\u5927\u5c0f",
+            label = stringResource(R.string.batch_size),
             modifier = Modifier.fillMaxWidth()
         )
         
@@ -542,9 +532,9 @@ fun ServerSection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text("\u7ed1\u5b9a\u6240\u6709\u63a5\u53e3", style = MaterialTheme.typography.bodyLarge)
+                    Text(stringResource(R.string.bind_all_interfaces_short), style = MaterialTheme.typography.bodyLarge)
                     Text(
-                        "\u5141\u8bb8\u5916\u90e8\u8bbf\u95ee (0.0.0.0)",
+                        stringResource(R.string.allow_external_access),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -565,7 +555,7 @@ fun AutoFitSection(
     onAutoFitCtxChange: (Int?) -> Unit
 ) {
     ConfigSectionCard(
-        title = "\u81ea\u9002\u5e94\u5185\u5b58",
+        title = stringResource(R.string.adaptive_memory),
         icon = Icons.Default.Android,
         iconColor = MaterialTheme.colorScheme.secondary
     ) {
@@ -582,9 +572,9 @@ fun AutoFitSection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("\u542f\u7528\u81ea\u9002\u5e94", style = MaterialTheme.typography.bodyLarge)
+                    Text(stringResource(R.string.enable_auto_fit), style = MaterialTheme.typography.bodyLarge)
                     Text(
-                        "\u81ea\u52a8\u8c03\u6574\u4e0a\u4e0b\u6587\u4ee5\u9002\u5e94\u5185\u5b58",
+                        stringResource(R.string.auto_fit_context_to_memory),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -608,14 +598,14 @@ fun AutoFitSection(
                         value = autoFitTargetMiB,
                         onValueChange = onAutoFitTargetChange,
                         defaultValue = 1024,
-                        label = "\u76ee\u6807\u4f59\u91cf (MiB)",
+                        label = stringResource(R.string.target_memory_margin),
                         modifier = Modifier.weight(1f)
                     )
                     NumberField(
                         value = autoFitCtx,
                         onValueChange = onAutoFitCtxChange,
                         defaultValue = 4096,
-                        label = "\u6700\u5c0f\u4e0a\u4e0b\u6587",
+                        label = stringResource(R.string.minimum_context),
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -630,17 +620,17 @@ fun ExtraParamsSection(
     onExtraParamsChange: (String) -> Unit
 ) {
     ConfigSectionCard(
-        title = "\u989d\u5916\u53c2\u6570",
+        title = stringResource(R.string.extra_parameters),
         icon = Icons.Default.Settings,
         iconColor = MaterialTheme.colorScheme.tertiary
     ) {
         OutlinedTextField(
             value = extraParams,
             onValueChange = onExtraParamsChange,
-            label = { Text("\u81ea\u5b9a\u4e49\u547d\u4ee4\u884c\u53c2\u6570") },
+            label = { Text(stringResource(R.string.custom_command_line_parameters)) },
             placeholder = {
                 Text(
-                    "\u4f8b\u5982: --arg1 value1 --arg2 value2",
+                    stringResource(R.string.extra_params_example),
                     style = MaterialTheme.typography.bodySmall
                 )
             },
@@ -650,6 +640,15 @@ fun ExtraParamsSection(
             shape = RoundedCornerShape(12.dp)
         )
     }
+}
+
+@Composable
+private fun PoolingType.localizedName(): String = when (this) {
+    PoolingType.NONE -> stringResource(R.string.none)
+    PoolingType.MEAN -> stringResource(R.string.mean)
+    PoolingType.CLS -> stringResource(R.string.cls)
+    PoolingType.LAST -> stringResource(R.string.last)
+    PoolingType.RANK -> stringResource(R.string.rank)
 }
 
 @Composable

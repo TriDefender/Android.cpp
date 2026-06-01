@@ -23,10 +23,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import tridefender.llama.snapdragon.R
 import tridefender.llama.snapdragon.model.DownloadState
 import tridefender.llama.snapdragon.model.GitHubRelease
 import tridefender.llama.snapdragon.model.KernelSource
@@ -115,7 +117,7 @@ fun KernelScreen(
                 ) {
                     Icon(Icons.Default.CloudDownload, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Download")
+                    Text(stringResource(R.string.download))
                 }
 
                 OutlinedButton(
@@ -133,7 +135,7 @@ fun KernelScreen(
                 ) {
                     Icon(Icons.Default.Folder, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Import")
+                    Text(stringResource(R.string.import_label))
                 }
             }
 
@@ -144,7 +146,7 @@ fun KernelScreen(
 
             // Installed versions header
             Text(
-                text = "Installed Kernels",
+                text = stringResource(R.string.installed_kernels),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(top = 4.dp)
@@ -153,7 +155,7 @@ fun KernelScreen(
             // Version list
             if (kernelConfig.versions.isEmpty()) {
                 Text(
-                    "No kernel versions installed",
+                    stringResource(R.string.no_kernel_versions_installed),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -205,19 +207,19 @@ fun KernelScreen(
     showDeleteConfirm?.let { name ->
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = null },
-            title = { Text("Delete Kernel") },
-            text = { Text("Delete '$name'? This cannot be undone.") },
+            title = { Text(stringResource(R.string.delete_kernel)) },
+            text = { Text(stringResource(R.string.delete_kernel_message, name)) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.deleteVersion(name)
                     showDeleteConfirm = null
                 }) {
-                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirm = null }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -240,9 +242,9 @@ private fun ActiveVersionHeader(
     val active = versions.find { it.name == activeVersion }
     val sourceLabel = active?.let {
         when (it.source) {
-            KernelSource.BUNDLED -> "Bundled"
-            KernelSource.GITHUB_RELEASE -> "GitHub Release"
-            KernelSource.LOCAL_IMPORT -> "Local Import"
+            KernelSource.BUNDLED -> stringResource(R.string.bundled)
+            KernelSource.GITHUB_RELEASE -> stringResource(R.string.github_release)
+            KernelSource.LOCAL_IMPORT -> stringResource(R.string.local_import)
         }
     } ?: "None"
 
@@ -255,7 +257,7 @@ private fun ActiveVersionHeader(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Active Kernel",
+                text = stringResource(R.string.active_kernel),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
             )
@@ -300,9 +302,9 @@ private fun DownloadProgressCard(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             val label = when (downloadState) {
-                DownloadState.DOWNLOADING -> "Downloading kernel..."
-                DownloadState.EXTRACTING -> "Extracting archive..."
-                DownloadState.VALIDATING -> "Validating files..."
+                DownloadState.DOWNLOADING -> stringResource(R.string.downloading_kernel)
+                DownloadState.EXTRACTING -> stringResource(R.string.extracting_archive)
+                DownloadState.VALIDATING -> stringResource(R.string.validating_files)
                 else -> ""
             }
             Text(
@@ -369,7 +371,7 @@ private fun KernelVersionRow(
                         Spacer(modifier = Modifier.width(8.dp))
                         SuggestionChip(
                             onClick = {},
-                            label = { Text("Active", style = MaterialTheme.typography.labelSmall) },
+                            label = { Text(stringResource(R.string.active), style = MaterialTheme.typography.labelSmall) },
                             icon = {
                                 Icon(
                                     Icons.Outlined.CheckCircle,
@@ -386,9 +388,9 @@ private fun KernelVersionRow(
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     val sourceLabel = when (version.source) {
-                        KernelSource.BUNDLED -> "Bundled"
-                        KernelSource.GITHUB_RELEASE -> "GitHub"
-                        KernelSource.LOCAL_IMPORT -> "Local"
+                        KernelSource.BUNDLED -> stringResource(R.string.bundled)
+                        KernelSource.GITHUB_RELEASE -> stringResource(R.string.github)
+                        KernelSource.LOCAL_IMPORT -> stringResource(R.string.local)
                     }
                     AssistChip(
                         onClick = {},
@@ -400,13 +402,13 @@ private fun KernelVersionRow(
                         Spacer(modifier = Modifier.width(8.dp))
                         Icon(
                             Icons.Default.Warning,
-                            contentDescription = "Missing libraries",
+                            contentDescription = stringResource(R.string.missing_libraries),
                             tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(2.dp))
                         Text(
-                            text = "${version.missingLibraries.size} missing",
+                            text = stringResource(R.string.missing_count, version.missingLibraries.size),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.error
                         )
@@ -432,7 +434,7 @@ private fun KernelVersionRow(
                 ) {
                     Icon(
                         Icons.Outlined.SwapHoriz,
-                        contentDescription = "Activate",
+                        contentDescription = stringResource(R.string.activate),
                         tint = if (serverRunning) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                         else MaterialTheme.colorScheme.primary
                     )
@@ -443,7 +445,7 @@ private fun KernelVersionRow(
                 IconButton(onClick = { onDelete(version.name) }) {
                     Icon(
                         Icons.Default.Delete,
-                        contentDescription = "Delete",
+                        contentDescription = stringResource(R.string.delete),
                         tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
                     )
                 }
@@ -462,15 +464,15 @@ private fun ImportNameDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Import Kernel") },
+        title = { Text(stringResource(R.string.import_kernel)) },
         text = {
             Column {
-                Text("Enter a name for this kernel version:")
+                Text(stringResource(R.string.enter_kernel_version_name))
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Version name") },
+                    label = { Text(stringResource(R.string.version_name)) },
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
@@ -482,12 +484,12 @@ private fun ImportNameDialog(
                 onClick = { onConfirm(name) },
                 enabled = name.isNotBlank()
             ) {
-                Text("Import")
+                Text(stringResource(R.string.import_label))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     )
@@ -513,7 +515,7 @@ private fun DownloadDialog(
                 onDismiss()
             }
         },
-        title = { Text("Download Kernels") },
+        title = { Text(stringResource(R.string.download_kernels)) },
         text = {
             Column(
                 modifier = Modifier
@@ -530,13 +532,13 @@ private fun DownloadDialog(
                     }
                 } else if (releases.isEmpty()) {
                     Text(
-                        "No releases found or network error",
+                        stringResource(R.string.no_releases_found),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 } else {
                     Text(
-                        "Select a release to download:",
+                        stringResource(R.string.select_release_to_download),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -555,9 +557,9 @@ private fun DownloadDialog(
                 if (downloadState == DownloadState.DOWNLOADING || downloadState == DownloadState.EXTRACTING || downloadState == DownloadState.VALIDATING) {
                     Spacer(modifier = Modifier.height(16.dp))
                     val label = when (downloadState) {
-                        DownloadState.DOWNLOADING -> "Downloading..."
-                        DownloadState.EXTRACTING -> "Extracting..."
-                        DownloadState.VALIDATING -> "Validating..."
+                        DownloadState.DOWNLOADING -> stringResource(R.string.downloading)
+                        DownloadState.EXTRACTING -> stringResource(R.string.extracting)
+                        DownloadState.VALIDATING -> stringResource(R.string.validating)
                         else -> ""
                     }
                     Text(label, style = MaterialTheme.typography.bodySmall)
@@ -593,7 +595,7 @@ private fun DownloadDialog(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                "Download complete!",
+                                stringResource(R.string.download_complete),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium,
                                 color = MaterialTheme.colorScheme.primary
@@ -621,7 +623,7 @@ private fun DownloadDialog(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                "Download failed. Please try again.",
+                                stringResource(R.string.download_failed),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.error
                             )
@@ -632,7 +634,7 @@ private fun DownloadDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Close")
+                Text(stringResource(R.string.close))
             }
         }
     )
@@ -683,15 +685,15 @@ private fun ImportResultDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(when (result) {
-                is ImportResult.Success -> "Import Successful"
-                is ImportResult.Error -> "Import Failed"
+                is ImportResult.Success -> stringResource(R.string.import_successful)
+                is ImportResult.Error -> stringResource(R.string.import_failed)
             })
         },
         text = {
             Column {
                 when (result) {
                     is ImportResult.Success -> {
-                        Text("Kernel imported successfully.")
+                        Text(stringResource(R.string.kernel_imported_successfully))
                         if (result.missingLibraries.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Row(verticalAlignment = Alignment.Top) {
@@ -704,7 +706,7 @@ private fun ImportResultDialog(
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Column {
                                     Text(
-                                        "Missing libraries:",
+                                        stringResource(R.string.missing_libraries),
                                         style = MaterialTheme.typography.bodyMedium,
                                         fontWeight = FontWeight.Medium,
                                         color = MaterialTheme.colorScheme.error
@@ -718,7 +720,7 @@ private fun ImportResultDialog(
                                     }
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
-                                        "Some features may not work correctly.",
+                                        stringResource(R.string.some_features_may_not_work),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.error
                                     )
@@ -734,7 +736,7 @@ private fun ImportResultDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("OK")
+                Text(stringResource(R.string.ok))
             }
         }
     )

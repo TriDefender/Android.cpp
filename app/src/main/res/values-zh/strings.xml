@@ -11,7 +11,7 @@
     <!-- Context Size -->
     <string name="context_size">上下文大小</string>
     <string name="context_size_desc">推理的最大上下文长度</string>
-    <string name="tokens_count">%1$d 个标记</string>
+    <string name="tokens_count">%1$d 个词元</string>
     
     <!-- Batch Size -->
     <string name="batch_size">批处理大小</string>
@@ -20,7 +20,7 @@
     
     <!-- Advanced Settings -->
     <string name="advanced_settings">高级设置</string>
-    <string name="predict_tokens">预测标记</string>
+    <string name="predict_tokens">预测词元</string>
     <string name="predict_tokens_info">留空表示无限生成</string>
     <string name="predict_tokens_hint">-1 表示无限</string>
     <string name="embedding_mode">嵌入模式</string>
@@ -91,4 +91,88 @@
     <string name="copied">已复制！</string>
     <string name="show">显示</string>
     <string name="hide">隐藏</string>
+    <string name="nav_config">配置</string>
+    <string name="nav_kernels">内核</string>
+    <string name="nav_runtime">运行</string>
+    <string name="default_value">默认：%1$d</string>
+    <string name="cancel">取消</string>
+    <string name="close">关闭</string>
+    <string name="delete">删除</string>
+    <string name="ok">确定</string>
+    <string name="none">无</string>
+    <string name="mean">平均</string>
+    <string name="cls">CLS</string>
+    <string name="last">最后一个</string>
+    <string name="rank">Rank</string>
+    <string name="server_status">服务器状态</string>
+    <string name="status_idle">空闲</string>
+    <string name="status_starting">启动中</string>
+    <string name="status_running">运行中</string>
+    <string name="status_stopping">停止中</string>
+    <string name="status_stopped">已停止</string>
+    <string name="status_error">错误</string>
+    <string name="model">模型</string>
+    <string name="context">上下文</string>
+    <string name="device">设备</string>
+    <string name="error_format">错误：%1$s</string>
+    <string name="start">启动</string>
+    <string name="stop">停止</string>
+    <string name="logs">日志</string>
+    <string name="clear">清除</string>
+    <string name="active_kernel">当前内核</string>
+    <string name="bundled">内置</string>
+    <string name="github_release">GitHub 发布版</string>
+    <string name="github">GitHub</string>
+    <string name="local_import">本地导入</string>
+    <string name="local">本地</string>
+    <string name="download">下载</string>
+    <string name="import_label">导入</string>
+    <string name="installed_kernels">已安装内核</string>
+    <string name="no_kernel_versions_installed">未安装内核版本</string>
+    <string name="active">当前</string>
+    <string name="missing_libraries">缺少库文件</string>
+    <string name="missing_count">缺少 %1$d 个</string>
+    <string name="activate">启用</string>
+    <string name="delete_kernel">删除内核</string>
+    <string name="delete_kernel_message">删除“%1$s”？此操作无法撤销。</string>
+    <string name="download_kernels">下载内核</string>
+    <string name="downloading_kernel">正在下载内核...</string>
+    <string name="extracting_archive">正在解压归档...</string>
+    <string name="validating_files">正在验证文件...</string>
+    <string name="downloading">正在下载...</string>
+    <string name="extracting">正在解压...</string>
+    <string name="validating">正在验证...</string>
+    <string name="no_releases_found">未找到发布版或网络错误</string>
+    <string name="select_release_to_download">选择要下载的发布版：</string>
+    <string name="download_complete">下载完成！</string>
+    <string name="download_failed">下载失败，请重试。</string>
+    <string name="import_kernel">导入内核</string>
+    <string name="enter_kernel_version_name">输入此内核版本的名称：</string>
+    <string name="version_name">版本名称</string>
+    <string name="import_successful">导入成功</string>
+    <string name="import_failed">导入失败</string>
+    <string name="kernel_imported_successfully">内核导入成功。</string>
+    <string name="some_features_may_not_work">某些功能可能无法正常工作。</string>
+    <string name="model_config">模型配置</string>
+    <string name="tap_to_select_model_file">点击选择模型文件</string>
+    <string name="embedding_mode_for_models">用于嵌入向量模型</string>
+    <string name="pooling_mode_label">Pooling 模式</string>
+    <string name="compute_device">计算设备</string>
+    <string name="device_type">设备类型</string>
+    <string name="device_opencl_gpu">OpenCL (GPU)</string>
+    <string name="device_htp_npu">HTP %1$d (NPU)</string>
+    <string name="gpu_layers_empty_default">GPU 层数（留空=99）</string>
+    <string name="kv_cache">KV 缓存</string>
+    <string name="k_cache">K 缓存</string>
+    <string name="v_cache">V 缓存</string>
+    <string name="server">服务器</string>
+    <string name="bind_all_interfaces_short">绑定所有接口</string>
+    <string name="allow_external_access">允许外部访问 (0.0.0.0)</string>
+    <string name="adaptive_memory">自适应内存</string>
+    <string name="enable_auto_fit">启用自适应</string>
+    <string name="auto_fit_context_to_memory">自动调整上下文以适应内存</string>
+    <string name="minimum_context">最小上下文</string>
+    <string name="extra_parameters">额外参数</string>
+    <string name="custom_command_line_parameters">自定义命令行参数</string>
+    <string name="extra_params_example">例如：--arg1 value1 --arg2 value2</string>
 </resources>

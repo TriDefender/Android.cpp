@@ -8,11 +8,13 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import tridefender.llama.snapdragon.R
 import tridefender.llama.snapdragon.ui.kernel.KernelScreen
 import tridefender.llama.snapdragon.ui.launcher.AllConfigScreen
 import tridefender.llama.snapdragon.ui.runtime.RuntimeScreen
@@ -32,7 +34,7 @@ fun MainScreen(
             NavigationBar {
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                    label = { Text("Config") },
+                    label = { Text(stringResource(R.string.nav_config)) },
                     selected = currentRoute == "config",
                     onClick = {
                         if (currentRoute != "config") {
@@ -44,7 +46,7 @@ fun MainScreen(
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Memory, contentDescription = null) },
-                    label = { Text("Kernels") },
+                    label = { Text(stringResource(R.string.nav_kernels)) },
                     selected = currentRoute == "kernels",
                     onClick = {
                         if (currentRoute != "kernels") {
@@ -56,7 +58,7 @@ fun MainScreen(
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.PlayArrow, contentDescription = null) },
-                    label = { Text("Runtime") },
+                    label = { Text(stringResource(R.string.nav_runtime)) },
                     selected = currentRoute == "runtime",
                     onClick = {
                         if (currentRoute != "runtime") {

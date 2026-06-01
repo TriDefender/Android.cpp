@@ -91,4 +91,98 @@
     <string name="copied">Copied!</string>
     <string name="show">Show</string>
     <string name="hide">Hide</string>
+
+    <!-- Navigation -->
+    <string name="nav_config">Config</string>
+    <string name="nav_kernels">Kernels</string>
+    <string name="nav_runtime">Runtime</string>
+
+    <!-- Shared -->
+    <string name="default_value">Default: %1$d</string>
+    <string name="cancel">Cancel</string>
+    <string name="close">Close</string>
+    <string name="delete">Delete</string>
+    <string name="ok">OK</string>
+    <string name="none">None</string>
+    <string name="mean">Mean</string>
+    <string name="cls">CLS</string>
+    <string name="last">Last</string>
+    <string name="rank">Rank</string>
+
+    <!-- Runtime -->
+    <string name="server_status">Server Status</string>
+    <string name="status_idle">Idle</string>
+    <string name="status_starting">Starting</string>
+    <string name="status_running">Running</string>
+    <string name="status_stopping">Stopping</string>
+    <string name="status_stopped">Stopped</string>
+    <string name="status_error">Error</string>
+    <string name="model">Model</string>
+    <string name="context">Context</string>
+    <string name="device">Device</string>
+    <string name="error_format">Error: %1$s</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="logs">Logs</string>
+    <string name="clear">Clear</string>
+
+    <!-- Kernel manager -->
+    <string name="active_kernel">Active Kernel</string>
+    <string name="bundled">Bundled</string>
+    <string name="github_release">GitHub Release</string>
+    <string name="github">GitHub</string>
+    <string name="local_import">Local Import</string>
+    <string name="local">Local</string>
+    <string name="download">Download</string>
+    <string name="import_label">Import</string>
+    <string name="installed_kernels">Installed Kernels</string>
+    <string name="no_kernel_versions_installed">No kernel versions installed</string>
+    <string name="active">Active</string>
+    <string name="missing_libraries">Missing libraries</string>
+    <string name="missing_count">%1$d missing</string>
+    <string name="activate">Activate</string>
+    <string name="delete_kernel">Delete Kernel</string>
+    <string name="delete_kernel_message">Delete \'%1$s\'? This cannot be undone.</string>
+    <string name="download_kernels">Download Kernels</string>
+    <string name="downloading_kernel">Downloading kernel...</string>
+    <string name="extracting_archive">Extracting archive...</string>
+    <string name="validating_files">Validating files...</string>
+    <string name="downloading">Downloading...</string>
+    <string name="extracting">Extracting...</string>
+    <string name="validating">Validating...</string>
+    <string name="no_releases_found">No releases found or network error</string>
+    <string name="select_release_to_download">Select a release to download:</string>
+    <string name="download_complete">Download complete!</string>
+    <string name="download_failed">Download failed. Please try again.</string>
+    <string name="import_kernel">Import Kernel</string>
+    <string name="enter_kernel_version_name">Enter a name for this kernel version:</string>
+    <string name="version_name">Version name</string>
+    <string name="import_successful">Import Successful</string>
+    <string name="import_failed">Import Failed</string>
+    <string name="kernel_imported_successfully">Kernel imported successfully.</string>
+    <string name="some_features_may_not_work">Some features may not work correctly.</string>
+
+    <!-- Main config -->
+    <string name="model_config">Model Configuration</string>
+    <string name="tap_to_select_model_file">Tap to select a model file</string>
+    <string name="embedding_mode_for_models">For embedding vector models</string>
+    <string name="pooling_mode_label">Pooling Mode</string>
+    <string name="compute_device">Compute Device</string>
+    <string name="device_type">Device Type</string>
+    <string name="device_opencl_gpu">OpenCL (GPU)</string>
+    <string name="device_htp_npu">HTP %1$d (NPU)</string>
+    <string name="gpu_layers_empty_default">GPU layers (empty=99)</string>
+    <string name="kv_cache">KV Cache</string>
+    <string name="k_cache">K Cache</string>
+    <string name="v_cache">V Cache</string>
+    <string name="server">Server</string>
+    <string name="bind_all_interfaces_short">Bind all interfaces</string>
+    <string name="allow_external_access">Allow external access (0.0.0.0)</string>
+    <string name="adaptive_memory">Adaptive Memory</string>
+    <string name="enable_auto_fit">Enable auto-fit</string>
+    <string name="auto_fit_context_to_memory">Automatically adjust context to fit memory</string>
+    <string name="minimum_context">Minimum context</string>
+    <string name="extra_parameters">Extra Parameters</string>
+    <string name="custom_command_line_parameters">Custom command-line parameters</string>
+    <string name="extra_params_example">Example: --arg1 value1 --arg2 value2</string>
 </resources>
