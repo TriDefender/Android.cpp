@@ -11,18 +11,20 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -41,6 +43,8 @@ import tridefender.llama.snapdragon.model.DeviceType
 import tridefender.llama.snapdragon.model.FlashAttentionMode
 import tridefender.llama.snapdragon.model.MemoryFitState
 import tridefender.llama.snapdragon.model.PoolingType
+import tridefender.llama.snapdragon.viewmodel.HuggingFaceFileEntry
+import tridefender.llama.snapdragon.viewmodel.HuggingFacePickerState
 import tridefender.llama.snapdragon.viewmodel.ModelCatalogEntry
 import tridefender.llama.snapdragon.viewmodel.ModelConfigViewModel
 
@@ -84,11 +88,14 @@ fun NumberField(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AllConfigScreen(
+    onManageModels: () -> Unit = {},
     viewModel: ModelConfigViewModel = hiltViewModel()
 ) {
     val config by viewModel.config.collectAsState()
     val analysis by viewModel.analysis.collectAsState()
+    val hfPicker by viewModel.hfPicker.collectAsState()
     val context = LocalContext.current
+    var showHfPicker by remember { mutableStateOf(false) }
 
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -124,7 +131,8 @@ fun AllConfigScreen(
             onModelSelect = { viewModel.updateModelPath(it) },
             onIsEmbeddingChange = { viewModel.updateIsEmbedding(it) },
             onPoolingTypeChange = { viewModel.updatePoolingType(it) },
-            onRefreshModels = { viewModel.refreshModelCatalog() },
+            onHfPickerClick = { showHfPicker = true },
+            onManageModels = onManageModels,
             onBrowseClick = {
                 filePickerLauncher.launch(
                     Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
@@ -136,6 +144,18 @@ fun AllConfigScreen(
                 )
             }
         )
+
+        if (showHfPicker) {
+            HuggingFaceModelPickerDialog(
+                state = hfPicker,
+                onDismiss = { showHfPicker = false },
+                onQueryChange = viewModel::updateHfQuery,
+                onSearch = viewModel::searchHuggingFaceModels,
+                onRepoSelect = viewModel::loadHuggingFaceFiles,
+                onDownload = viewModel::downloadHuggingFaceFile,
+                onMessageShown = viewModel::clearHfMessage
+            )
+        }
         
         DeviceSection(
             deviceType = config.deviceType,
@@ -194,7 +214,8 @@ fun ModelSection(
     onModelSelect: (String) -> Unit,
     onIsEmbeddingChange: (Boolean) -> Unit,
     onPoolingTypeChange: (PoolingType) -> Unit,
-    onRefreshModels: () -> Unit,
+    onHfPickerClick: () -> Unit,
+    onManageModels: () -> Unit,
     onBrowseClick: () -> Unit
 ) {
     ConfigSectionCard(
@@ -281,29 +302,40 @@ fun ModelSection(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End,
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TextButton(onClick = onRefreshModels) {
+            TextButton(onClick = onHfPickerClick) {
                 Icon(
-                    Icons.Outlined.Refresh,
+                    Icons.Default.CloudDownload,
                     contentDescription = null,
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text(stringResource(R.string.refresh_models))
+                Text(stringResource(R.string.hf_model_picker))
             }
-            TextButton(onClick = onBrowseClick) {
-                Icon(
-                    Icons.Default.Folder,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(stringResource(R.string.browse))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                TextButton(onClick = onManageModels) {
+                    Icon(
+                        Icons.Default.Settings,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(stringResource(R.string.manage_models))
+                }
+                TextButton(onClick = onBrowseClick) {
+                    Icon(
+                        Icons.Default.Folder,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(stringResource(R.string.browse))
+                }
             }
         }
-        
+
         Spacer(modifier = Modifier.height(16.dp))
         
         Surface(
@@ -762,7 +794,7 @@ private fun MemoryFitState.fitColor(): Color = when (this) {
     MemoryFitState.GOOD_FIT -> Color(0xFF2E7D32)
 }
 
-private fun formatBytes(bytes: Long): String {
+internal fun formatBytes(bytes: Long): String {
     val absBytes = kotlin.math.abs(bytes.toDouble())
     val gib = 1024.0 * 1024.0 * 1024.0
     val mib = 1024.0 * 1024.0
@@ -771,6 +803,131 @@ private fun formatBytes(bytes: Long): String {
     } else {
         "%.0f MiB".format(bytes / mib)
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HuggingFaceModelPickerDialog(
+    state: HuggingFacePickerState,
+    onDismiss: () -> Unit,
+    onQueryChange: (String) -> Unit,
+    onSearch: () -> Unit,
+    onRepoSelect: (String) -> Unit,
+    onDownload: (HuggingFaceFileEntry) -> Unit,
+    onMessageShown: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.close))
+            }
+        },
+        title = { Text(stringResource(R.string.hf_model_picker)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = state.query,
+                        onValueChange = onQueryChange,
+                        label = { Text(stringResource(R.string.hf_search_hint)) },
+                        singleLine = true,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Button(
+                        onClick = onSearch,
+                        enabled = !state.isSearching && state.downloadFileName == null
+                    ) {
+                        Text(stringResource(R.string.search))
+                    }
+                }
+
+                state.message?.let { message ->
+                    AssistChip(
+                        onClick = onMessageShown,
+                        label = { Text(message, maxLines = 2, overflow = TextOverflow.Ellipsis) }
+                    )
+                }
+
+                if (state.isSearching || state.isLoadingFiles) {
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                }
+
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 360.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    if (state.selectedRepoId == null) {
+                        items(state.searchResults) { repo ->
+                            ListItem(
+                                headlineContent = {
+                                    Text(repo.modelId, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                },
+                                supportingContent = {
+                                    Text(
+                                        stringResource(
+                                            R.string.hf_model_stats,
+                                            repo.downloads ?: 0,
+                                            repo.likes ?: 0
+                                        )
+                                    )
+                                },
+                                trailingContent = {
+                                    TextButton(onClick = { onRepoSelect(repo.modelId) }) {
+                                        Text(stringResource(R.string.select))
+                                    }
+                                }
+                            )
+                        }
+                    } else {
+                        item {
+                            TextButton(onClick = { onQueryChange(state.query); onSearch() }) {
+                                Text(stringResource(R.string.hf_back_to_results))
+                            }
+                        }
+                        items(state.files) { file ->
+                            ListItem(
+                                headlineContent = {
+                                    Text(file.fileName, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                },
+                                supportingContent = {
+                                    Text(file.sizeBytes?.let { formatBytes(it) } ?: stringResource(R.string.unknown_size))
+                                },
+                                trailingContent = {
+                                    TextButton(
+                                        onClick = { onDownload(file) },
+                                        enabled = state.downloadFileName == null
+                                    ) {
+                                        Text(stringResource(R.string.download))
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+
+                state.downloadFileName?.let { fileName ->
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(
+                            stringResource(R.string.downloading_model, fileName),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        LinearProgressIndicator(
+                            progress = { state.downloadProgress ?: 0f },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
+        }
+    )
 }
 
 @Composable

@@ -17,6 +17,7 @@ import androidx.navigation.compose.rememberNavController
 import tridefender.llama.snapdragon.R
 import tridefender.llama.snapdragon.ui.kernel.KernelScreen
 import tridefender.llama.snapdragon.ui.launcher.AllConfigScreen
+import tridefender.llama.snapdragon.ui.launcher.ModelManagerScreen
 import tridefender.llama.snapdragon.ui.runtime.RuntimeScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,7 +36,7 @@ fun MainScreen(
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Settings, contentDescription = null) },
                     label = { Text(stringResource(R.string.nav_config)) },
-                    selected = currentRoute == "config",
+                    selected = currentRoute == "config" || currentRoute == "model_manager",
                     onClick = {
                         if (currentRoute != "config") {
                             navController.navigate("config") {
@@ -77,7 +78,10 @@ fun MainScreen(
             modifier = Modifier.padding(paddingValues)
         ) {
             composable("config") {
-                AllConfigScreen()
+                AllConfigScreen(onManageModels = { navController.navigate("model_manager") })
+            }
+            composable("model_manager") {
+                ModelManagerScreen(onBack = { navController.popBackStack() })
             }
             composable("kernels") {
                 KernelScreen()
