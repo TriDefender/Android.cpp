@@ -11,6 +11,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -311,8 +313,12 @@ fun ModelSection(
                     contentDescription = null,
                     modifier = Modifier.size(18.dp)
                 )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(stringResource(R.string.hf_model_picker))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = stringResource(R.string.hf_model_picker),
+                    maxLines = 1,
+                    overflow = TextOverflow.Clip
+                )
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 TextButton(onClick = onManageModels) {
@@ -321,8 +327,12 @@ fun ModelSection(
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(stringResource(R.string.manage_models))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = stringResource(R.string.manage_models),
+                        maxLines = 1,
+                        overflow = TextOverflow.Clip
+                    )
                 }
                 TextButton(onClick = onBrowseClick) {
                     Icon(
@@ -330,8 +340,12 @@ fun ModelSection(
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(stringResource(R.string.browse))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = stringResource(R.string.browse_model),
+                        maxLines = 1,
+                        overflow = TextOverflow.Clip
+                    )
                 }
             }
         }
@@ -865,24 +879,15 @@ private fun HuggingFaceModelPickerDialog(
                 ) {
                     if (state.selectedRepoId == null) {
                         items(state.searchResults) { repo ->
-                            ListItem(
-                                headlineContent = {
-                                    Text(repo.modelId, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                },
-                                supportingContent = {
-                                    Text(
-                                        stringResource(
-                                            R.string.hf_model_stats,
-                                            repo.downloads ?: 0,
-                                            repo.likes ?: 0
-                                        )
-                                    )
-                                },
-                                trailingContent = {
-                                    TextButton(onClick = { onRepoSelect(repo.modelId) }) {
-                                        Text(stringResource(R.string.select))
-                                    }
-                                }
+                            HfPickerCard(
+                                title = repo.modelId,
+                                subtitle = stringResource(
+                                    R.string.hf_model_stats,
+                                    repo.downloads ?: 0,
+                                    repo.likes ?: 0
+                                ),
+                                enabled = state.downloadFileName == null,
+                                onClick = { onRepoSelect(repo.modelId) }
                             )
                         }
                     } else {
@@ -892,21 +897,11 @@ private fun HuggingFaceModelPickerDialog(
                             }
                         }
                         items(state.files) { file ->
-                            ListItem(
-                                headlineContent = {
-                                    Text(file.fileName, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                },
-                                supportingContent = {
-                                    Text(file.sizeBytes?.let { formatBytes(it) } ?: stringResource(R.string.unknown_size))
-                                },
-                                trailingContent = {
-                                    TextButton(
-                                        onClick = { onDownload(file) },
-                                        enabled = state.downloadFileName == null
-                                    ) {
-                                        Text(stringResource(R.string.download))
-                                    }
-                                }
+                            HfPickerCard(
+                                title = file.fileName,
+                                subtitle = file.sizeBytes?.let { formatBytes(it) },
+                                enabled = state.downloadFileName == null,
+                                onClick = { onDownload(file) }
                             )
                         }
                     }
@@ -928,6 +923,47 @@ private fun HuggingFaceModelPickerDialog(
             }
         }
     )
+}
+
+@Composable
+private fun HfPickerCard(
+    title: String,
+    subtitle: String?,
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = enabled, onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Text(
+                text = title,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                maxLines = 1,
+                softWrap = false,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            subtitle?.let {
+                Text(
+                    text = it,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
 }
 
 @Composable

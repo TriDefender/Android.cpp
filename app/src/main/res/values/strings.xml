@@ -169,18 +169,18 @@
     <!-- Main config -->
     <string name="model_config">Model Configuration</string>
     <string name="tap_to_select_model_file">Tap to select a model file</string>
-    <string name="hf_model_picker">HF Model Picker</string>
-    <string name="hf_search_hint">Search Hugging Face GGUF models</string>
+    <string name="hf_model_picker">Search</string>
+    <string name="hf_search_hint">Model name</string>
     <string name="hf_model_stats">%1$d downloads - %2$d likes</string>
     <string name="hf_back_to_results">Back to results</string>
     <string name="downloading_model">Downloading %1$s...</string>
-    <string name="manage_models">Manage Models</string>
+    <string name="manage_models">Manage</string>
+    <string name="browse_model">Browse</string>
     <string name="model_cache_folder">Model cache folder</string>
     <string name="rename_model">Rename Model</string>
     <string name="delete_model">Delete Model</string>
     <string name="delete_model_message">Delete \'%1$s\' from the model cache? This cannot be undone.</string>
     <string name="model_name">Model name</string>
-    <string name="unknown_size">Unknown size</string>
     <string name="selected_model_with_size">Selected - %1$s</string>
     <string name="no_cached_models">No cached GGUF models yet. Browse to import one.</string>
     <string name="cached_models_count">%1$d cached GGUF model(s)</string>
