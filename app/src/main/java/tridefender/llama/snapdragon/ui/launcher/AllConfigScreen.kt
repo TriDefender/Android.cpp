@@ -22,21 +22,28 @@ import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import tridefender.llama.snapdragon.R
 import tridefender.llama.snapdragon.model.CacheType
 import tridefender.llama.snapdragon.model.DeviceType
 import tridefender.llama.snapdragon.model.FlashAttentionMode
+import tridefender.llama.snapdragon.model.MemoryFitState
+import tridefender.llama.snapdragon.model.ModelMemoryEstimate
 import tridefender.llama.snapdragon.model.PoolingType
+import tridefender.llama.snapdragon.viewmodel.ModelCatalogEntry
 import tridefender.llama.snapdragon.viewmodel.ModelConfigViewModel
 
 private const val TAG = "AllConfigScreen"
@@ -82,6 +89,7 @@ fun AllConfigScreen(
     viewModel: ModelConfigViewModel = hiltViewModel()
 ) {
     val config by viewModel.config.collectAsState()
+    val analysis by viewModel.analysis.collectAsState()
     val context = LocalContext.current
 
     val filePickerLauncher = rememberLauncherForActivityResult(
@@ -98,7 +106,7 @@ fun AllConfigScreen(
                     Log.w(TAG, "Failed to persist URI permission for $it", error)
                 }
 
-                viewModel.updateModelPath(it.toString())
+                viewModel.importModelUri(it.toString())
             }
         }
     }
@@ -112,10 +120,15 @@ fun AllConfigScreen(
     ) {
         ModelSection(
             modelPath = config.modelPath,
+            modelCatalog = analysis.catalog,
+            selectedEstimate = analysis.selectedEstimate,
+            freeBytes = analysis.freeBytes,
             isEmbedding = config.isEmbedding,
             poolingType = config.poolingType,
+            onModelSelect = { viewModel.updateModelPath(it) },
             onIsEmbeddingChange = { viewModel.updateIsEmbedding(it) },
             onPoolingTypeChange = { viewModel.updatePoolingType(it) },
+            onRefreshModels = { viewModel.refreshModelCatalog() },
             onBrowseClick = {
                 filePickerLauncher.launch(
                     Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
@@ -179,10 +192,15 @@ fun AllConfigScreen(
 @Composable
 fun ModelSection(
     modelPath: String,
+    modelCatalog: List<ModelCatalogEntry>,
+    selectedEstimate: ModelMemoryEstimate?,
+    freeBytes: Long,
     isEmbedding: Boolean,
     poolingType: PoolingType,
+    onModelSelect: (String) -> Unit,
     onIsEmbeddingChange: (Boolean) -> Unit,
     onPoolingTypeChange: (PoolingType) -> Unit,
+    onRefreshModels: () -> Unit,
     onBrowseClick: () -> Unit
 ) {
     ConfigSectionCard(
@@ -191,20 +209,113 @@ fun ModelSection(
         iconColor = MaterialTheme.colorScheme.primary
     ) {
         val displayName = modelPath.substringAfterLast("%2F").substringAfterLast("/")
-        
-        OutlinedTextField(
-            value = displayName.ifEmpty { stringResource(R.string.tap_to_select_model_file) },
-            onValueChange = {},
-            label = { Text(stringResource(R.string.model_file)) },
-            modifier = Modifier.fillMaxWidth(),
-            readOnly = true,
-            singleLine = true,
-            trailingIcon = {
-                IconButton(onClick = onBrowseClick) {
-                    Icon(Icons.Default.Folder, contentDescription = stringResource(R.string.browse))
+
+        var modelMenuExpanded by remember { mutableStateOf(false) }
+        ExposedDropdownMenuBox(
+            expanded = modelMenuExpanded,
+            onExpandedChange = { modelMenuExpanded = it && modelCatalog.isNotEmpty() }
+        ) {
+            OutlinedTextField(
+                value = displayName.ifEmpty { stringResource(R.string.tap_to_select_model_file) },
+                onValueChange = {},
+                label = { Text(stringResource(R.string.model_file)) },
+                supportingText = {
+                    Text(
+                        text = if (modelCatalog.isEmpty()) {
+                            stringResource(R.string.no_cached_models)
+                        } else {
+                            stringResource(R.string.cached_models_count, modelCatalog.size)
+                        },
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+                readOnly = true,
+                singleLine = true,
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = modelMenuExpanded) },
+                shape = RoundedCornerShape(12.dp)
+            )
+
+            ExposedDropdownMenu(
+                expanded = modelMenuExpanded,
+                onDismissRequest = { modelMenuExpanded = false }
+            ) {
+                modelCatalog.forEach { entry ->
+                    DropdownMenuItem(
+                        text = {
+                            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                Text(
+                                    text = entry.name,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Text(
+                                    text = entry.estimate?.let {
+                                        stringResource(
+                                            R.string.model_menu_memory_line,
+                                            formatBytes(it.totalBytes),
+                                            fitLabel(it.fitState)
+                                        )
+                                    } ?: stringResource(R.string.model_metadata_unavailable),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = entry.estimate?.fitState?.fitColor()
+                                        ?: MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        onClick = {
+                            onModelSelect(entry.path)
+                            modelMenuExpanded = false
+                        },
+                        trailingIcon = {
+                            if (entry.path == modelPath) {
+                                Icon(
+                                    Icons.Outlined.Check,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    )
                 }
-            },
-            shape = RoundedCornerShape(12.dp)
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TextButton(onClick = onRefreshModels) {
+                Icon(
+                    Icons.Outlined.Refresh,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(stringResource(R.string.refresh_models))
+            }
+            TextButton(onClick = onBrowseClick) {
+                Icon(
+                    Icons.Default.Folder,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(stringResource(R.string.browse))
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        ModelMemoryCard(
+            estimate = selectedEstimate,
+            freeBytes = freeBytes,
+            modifier = Modifier.fillMaxWidth()
         )
         
         Spacer(modifier = Modifier.height(16.dp))
@@ -643,12 +754,138 @@ fun ExtraParamsSection(
 }
 
 @Composable
+private fun ModelMemoryCard(
+    estimate: ModelMemoryEstimate?,
+    freeBytes: Long,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.model_memory_calculator),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = stringResource(R.string.unified_memory_note),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                if (estimate != null) {
+                    AssistChip(
+                        onClick = {},
+                        label = { Text(fitLabel(estimate.fitState)) },
+                        colors = AssistChipDefaults.assistChipColors(
+                            labelColor = estimate.fitState.fitColor()
+                        )
+                    )
+                }
+            }
+
+            if (estimate == null) {
+                Text(
+                    text = stringResource(
+                        R.string.model_memory_waiting,
+                        formatBytes(freeBytes)
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                MemoryInfoRow(stringResource(R.string.available_memory), formatBytes(estimate.freeBytes))
+                MemoryInfoRow(stringResource(R.string.model_weights), formatBytes(estimate.modelBytes))
+                MemoryInfoRow(stringResource(R.string.kv_cache_estimate), formatBytes(estimate.kvCacheBytes))
+                MemoryInfoRow(stringResource(R.string.runtime_overhead), formatBytes(estimate.overheadBytes))
+                MemoryInfoRow(stringResource(R.string.total_memory_estimate), formatBytes(estimate.totalBytes))
+                MemoryInfoRow(
+                    label = stringResource(R.string.memory_after_load),
+                    value = formatSignedBytes(estimate.remainingBytes),
+                    valueColor = estimate.fitState.fitColor()
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MemoryInfoRow(
+    label: String,
+    value: String,
+    valueColor: Color = MaterialTheme.colorScheme.onSurface
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodySmall,
+            fontFamily = FontFamily.Monospace,
+            color = valueColor
+        )
+    }
+}
+
+@Composable
 private fun PoolingType.localizedName(): String = when (this) {
     PoolingType.NONE -> stringResource(R.string.none)
     PoolingType.MEAN -> stringResource(R.string.mean)
     PoolingType.CLS -> stringResource(R.string.cls)
     PoolingType.LAST -> stringResource(R.string.last)
     PoolingType.RANK -> stringResource(R.string.rank)
+}
+
+@Composable
+private fun fitLabel(state: MemoryFitState): String = when (state) {
+    MemoryFitState.WONT_FIT -> stringResource(R.string.fit_wont_fit)
+    MemoryFitState.TIGHT_FIT -> stringResource(R.string.fit_tight_fit)
+    MemoryFitState.GOOD_FIT -> stringResource(R.string.fit_good_fit)
+}
+
+@Composable
+private fun MemoryFitState.fitColor(): Color = when (this) {
+    MemoryFitState.WONT_FIT -> MaterialTheme.colorScheme.error
+    MemoryFitState.TIGHT_FIT -> Color(0xFFB26A00)
+    MemoryFitState.GOOD_FIT -> Color(0xFF2E7D32)
+}
+
+private fun formatBytes(bytes: Long): String {
+    val absBytes = kotlin.math.abs(bytes.toDouble())
+    val gib = 1024.0 * 1024.0 * 1024.0
+    val mib = 1024.0 * 1024.0
+    return if (absBytes >= gib) {
+        "%.2f GiB".format(bytes / gib)
+    } else {
+        "%.0f MiB".format(bytes / mib)
+    }
+}
+
+private fun formatSignedBytes(bytes: Long): String {
+    val prefix = if (bytes > 0) "+" else ""
+    return prefix + formatBytes(bytes)
 }
 
 @Composable

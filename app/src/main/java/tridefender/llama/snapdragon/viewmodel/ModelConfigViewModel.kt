@@ -68,6 +68,15 @@ class ModelConfigViewModel @Inject constructor(
         saveConfig()
         analyzeSelectedModel(path)
     }
+
+    fun importModelUri(uriString: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val resolvedPath = resolveLocalFile(uriString)?.absolutePath ?: uriString
+            _config.update { it.copy(modelPath = resolvedPath) }
+            configRepository.saveConfig(_config.value)
+            refreshAnalysis(resolvedPath)
+        }
+    }
     
     fun updateContextSize(size: Int?) {
         _config.update { it.copy(contextSize = size ?: -1) }
@@ -169,44 +178,27 @@ class ModelConfigViewModel @Inject constructor(
 
     fun refreshModelCatalog() {
         viewModelScope.launch(Dispatchers.IO) {
-            val freeBytes = readFreeBytes()
-            val modelsDir = File(context.filesDir, "models")
-            val files = modelsDir.takeIf { it.exists() }?.listFiles { file ->
-                file.isFile && file.name.endsWith(".gguf", ignoreCase = true)
-            }?.sortedByDescending { it.lastModified() }.orEmpty()
-
-            val entries = files.map { file ->
-                val estimate = estimateFor(file, freeBytes)
-                ModelCatalogEntry(
-                    path = file.absolutePath,
-                    name = file.name,
-                    estimate = estimate
-                )
-            }
-
-            _analysis.update { state ->
-                state.copy(
-                    freeBytes = freeBytes,
-                    catalog = entries,
-                    selectedEstimate = entries.firstOrNull { it.path == _config.value.modelPath }?.estimate
-                )
-            }
+            refreshAnalysis(_config.value.modelPath)
         }
     }
 
     private fun analyzeSelectedModel(path: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val freeBytes = readFreeBytes()
-            val file = resolveLocalFile(path)
-            val estimate = file?.let { estimateFor(it, freeBytes) }
-            val catalog = loadCatalog(freeBytes)
-            _analysis.update { state ->
-                state.copy(
-                    freeBytes = freeBytes,
-                    catalog = catalog,
-                    selectedEstimate = estimate
-                )
-            }
+            refreshAnalysis(path)
+        }
+    }
+
+    private fun refreshAnalysis(selectedPath: String) {
+        val freeBytes = readFreeBytes()
+        val selectedFile = resolveLocalFile(selectedPath)
+        val estimate = selectedFile?.let { estimateFor(it, freeBytes) }
+        val catalog = loadCatalog(freeBytes).withSelectedFile(selectedFile, estimate)
+        _analysis.update { state ->
+            state.copy(
+                freeBytes = freeBytes,
+                catalog = catalog,
+                selectedEstimate = estimate ?: catalog.firstOrNull { it.path == selectedPath }?.estimate
+            )
         }
     }
 
@@ -221,6 +213,20 @@ class ModelConfigViewModel @Inject constructor(
                 estimate = estimateFor(file, freeBytes)
             )
         }.orEmpty()
+    }
+
+    private fun List<ModelCatalogEntry>.withSelectedFile(
+        selectedFile: File?,
+        estimate: ModelMemoryEstimate?
+    ): List<ModelCatalogEntry> {
+        if (selectedFile == null || any { it.path == selectedFile.absolutePath }) return this
+        return listOf(
+            ModelCatalogEntry(
+                path = selectedFile.absolutePath,
+                name = selectedFile.name,
+                estimate = estimate
+            )
+        ) + this
     }
 
     private fun resolveLocalFile(path: String): File? {
