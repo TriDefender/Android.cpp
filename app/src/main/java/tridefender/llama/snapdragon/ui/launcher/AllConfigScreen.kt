@@ -31,7 +31,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -41,7 +40,6 @@ import tridefender.llama.snapdragon.model.CacheType
 import tridefender.llama.snapdragon.model.DeviceType
 import tridefender.llama.snapdragon.model.FlashAttentionMode
 import tridefender.llama.snapdragon.model.MemoryFitState
-import tridefender.llama.snapdragon.model.ModelMemoryEstimate
 import tridefender.llama.snapdragon.model.PoolingType
 import tridefender.llama.snapdragon.viewmodel.ModelCatalogEntry
 import tridefender.llama.snapdragon.viewmodel.ModelConfigViewModel
@@ -121,8 +119,6 @@ fun AllConfigScreen(
         ModelSection(
             modelPath = config.modelPath,
             modelCatalog = analysis.catalog,
-            selectedEstimate = analysis.selectedEstimate,
-            freeBytes = analysis.freeBytes,
             isEmbedding = config.isEmbedding,
             poolingType = config.poolingType,
             onModelSelect = { viewModel.updateModelPath(it) },
@@ -193,8 +189,6 @@ fun AllConfigScreen(
 fun ModelSection(
     modelPath: String,
     modelCatalog: List<ModelCatalogEntry>,
-    selectedEstimate: ModelMemoryEstimate?,
-    freeBytes: Long,
     isEmbedding: Boolean,
     poolingType: PoolingType,
     onModelSelect: (String) -> Unit,
@@ -309,14 +303,6 @@ fun ModelSection(
                 Text(stringResource(R.string.browse))
             }
         }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        ModelMemoryCard(
-            estimate = selectedEstimate,
-            freeBytes = freeBytes,
-            modifier = Modifier.fillMaxWidth()
-        )
         
         Spacer(modifier = Modifier.height(16.dp))
         
@@ -754,102 +740,6 @@ fun ExtraParamsSection(
 }
 
 @Composable
-private fun ModelMemoryCard(
-    estimate: ModelMemoryEstimate?,
-    freeBytes: Long,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.model_memory_calculator),
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = stringResource(R.string.unified_memory_note),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                if (estimate != null) {
-                    AssistChip(
-                        onClick = {},
-                        label = { Text(fitLabel(estimate.fitState)) },
-                        colors = AssistChipDefaults.assistChipColors(
-                            labelColor = estimate.fitState.fitColor()
-                        )
-                    )
-                }
-            }
-
-            if (estimate == null) {
-                Text(
-                    text = stringResource(
-                        R.string.model_memory_waiting,
-                        formatBytes(freeBytes)
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            } else {
-                MemoryInfoRow(stringResource(R.string.available_memory), formatBytes(estimate.freeBytes))
-                MemoryInfoRow(stringResource(R.string.model_weights), formatBytes(estimate.modelBytes))
-                MemoryInfoRow(stringResource(R.string.kv_cache_estimate), formatBytes(estimate.kvCacheBytes))
-                MemoryInfoRow(stringResource(R.string.runtime_overhead), formatBytes(estimate.overheadBytes))
-                MemoryInfoRow(stringResource(R.string.total_memory_estimate), formatBytes(estimate.totalBytes))
-                MemoryInfoRow(
-                    label = stringResource(R.string.memory_after_load),
-                    value = formatSignedBytes(estimate.remainingBytes),
-                    valueColor = estimate.fitState.fitColor()
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun MemoryInfoRow(
-    label: String,
-    value: String,
-    valueColor: Color = MaterialTheme.colorScheme.onSurface
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodySmall,
-            fontFamily = FontFamily.Monospace,
-            color = valueColor
-        )
-    }
-}
-
-@Composable
 private fun PoolingType.localizedName(): String = when (this) {
     PoolingType.NONE -> stringResource(R.string.none)
     PoolingType.MEAN -> stringResource(R.string.mean)
@@ -881,11 +771,6 @@ private fun formatBytes(bytes: Long): String {
     } else {
         "%.0f MiB".format(bytes / mib)
     }
-}
-
-private fun formatSignedBytes(bytes: Long): String {
-    val prefix = if (bytes > 0) "+" else ""
-    return prefix + formatBytes(bytes)
 }
 
 @Composable

@@ -170,15 +170,6 @@
     <string name="cached_models_count">%1$d cached GGUF model(s)</string>
     <string name="model_menu_memory_line">%1$s - %2$s</string>
     <string name="model_metadata_unavailable">Metadata unavailable</string>
-    <string name="model_memory_calculator">Model Memory Calculator</string>
-    <string name="unified_memory_note">Phone RAM is unified; model weights, KV cache, and runtime overhead use the same pool.</string>
-    <string name="model_memory_waiting">Select a readable GGUF model to estimate memory use. Current free memory: %1$s.</string>
-    <string name="available_memory">Available memory</string>
-    <string name="model_weights">Model weights</string>
-    <string name="kv_cache_estimate">KV cache estimate</string>
-    <string name="runtime_overhead">Runtime overhead</string>
-    <string name="total_memory_estimate">Total estimate</string>
-    <string name="memory_after_load">After load</string>
     <string name="fit_wont_fit">Won\'t fit</string>
     <string name="fit_tight_fit">Tight fit</string>
     <string name="fit_good_fit">Good fit</string>
